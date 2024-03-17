@@ -1,4 +1,5 @@
 # NodeCreator
+支持批量创建节点
 ## 使用方法
 
 1. 点击右侧Releases，下载NodeCreator.exe
