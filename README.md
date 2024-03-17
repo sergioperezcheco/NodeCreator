@@ -6,8 +6,7 @@
 2. 双击运行
 </br>   ![image.png](https://cdn.nlark.com/yuque/0/2024/png/35591949/1710678475686-0004b064-e0d1-4b0f-83d9-c396140989e9.png#averageHue=%23fafafa&clientId=u651cf9be-a887-4&from=paste&height=693&id=ud2aca18d&originHeight=866&originWidth=707&originalType=binary&ratio=1.25&rotation=0&showTitle=false&size=22785&status=done&style=none&taskId=ued74dd7d-a649-4679-ad2c-73d4f11f91d&title=&width=565.6)
 3. 输入原始节点（必须已经套了CDN）
-</br>    ![image](https://github.com/sergioperezcheco/NodeCreator/assets/104541981/381f4a23-a9ff-4ce7-a040-32a239eddd7c)
-
+</br>    ![image.png](https://cdn.nlark.com/yuque/0/2024/png/35591949/1710681211325-a6b0412d-98e7-4290-8b34-ce8608aca69c.png#averageHue=%23edecec&clientId=u651cf9be-a887-4&from=paste&height=186&id=u0de92904&originHeight=233&originWidth=705&originalType=binary&ratio=1.25&rotation=0&showTitle=false&size=18791&status=done&style=none&taskId=u3662bca5-d596-48e6-96e9-b99f1ee292c&title=&width=564)
 4. 输入优选IP或反代优选IP
 </br>    ![image.png](https://cdn.nlark.com/yuque/0/2024/png/35591949/1710678771648-bfd9b74c-354b-4205-894d-5c8b2eda6d65.png#averageHue=%23f6f6f6&clientId=u651cf9be-a887-4&from=paste&height=162&id=u724dedcd&originHeight=203&originWidth=707&originalType=binary&ratio=1.25&rotation=0&showTitle=false&size=17404&status=done&style=none&taskId=u0c5f3a24-cd29-49fc-b599-3d5e2d5ea89&title=&width=565.6)
 5. 选择随机或顺序并输入生成节点数量
