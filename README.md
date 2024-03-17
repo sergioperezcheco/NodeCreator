@@ -2,8 +2,7 @@
 ## 使用方法
 
 1. 点击右侧Releases，下载NodeCreator.exe
-2. 双击运行
-![image.png](https://cdn.nlark.com/yuque/0/2024/png/35591949/1710678475686-0004b064-e0d1-4b0f-83d9-c396140989e9.png#averageHue=%23fafafa&clientId=u651cf9be-a887-4&from=paste&height=693&id=ud2aca18d&originHeight=866&originWidth=707&originalType=binary&ratio=1.25&rotation=0&showTitle=false&size=22785&status=done&style=none&taskId=ued74dd7d-a649-4679-ad2c-73d4f11f91d&title=&width=565.6)
+2. 双击运行![image.png](https://cdn.nlark.com/yuque/0/2024/png/35591949/1710678475686-0004b064-e0d1-4b0f-83d9-c396140989e9.png#averageHue=%23fafafa&clientId=u651cf9be-a887-4&from=paste&height=693&id=ud2aca18d&originHeight=866&originWidth=707&originalType=binary&ratio=1.25&rotation=0&showTitle=false&size=22785&status=done&style=none&taskId=ued74dd7d-a649-4679-ad2c-73d4f11f91d&title=&width=565.6)
 4. 输入原始节点（必须已经套CDN）
 ![image.png](https://cdn.nlark.com/yuque/0/2024/png/35591949/1710678698574-89347e12-b67b-49c2-ba0c-1459ccef787a.png#averageHue=%23f7f4f4&clientId=u651cf9be-a887-4&from=paste&height=693&id=u6875e4a8&originHeight=864&originWidth=707&originalType=binary&ratio=1.25&rotation=0&showTitle=false&size=27705&status=done&style=none&taskId=ufb1c59d9-c4de-479f-91e2-329fb84ac69&title=&width=567)
 5. 输入优选IP或反代优选IP
