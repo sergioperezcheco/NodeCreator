@@ -6,6 +6,7 @@ import random
 import ipaddress
 import sys
 import os
+import re
 
 class App:
     def __init__(self, window):
@@ -42,13 +43,14 @@ class App:
 
         self.order_var = tk.StringVar(window)
         self.order_var.set("顺序")  # 默认值
-        self.order_option = ttk.Combobox(self.inner_option_frame, textvariable=self.order_var, values=["顺序", "随机"], width=10)
+        self.order_option = ttk.Combobox(self.inner_option_frame, textvariable=self.order_var, values=["顺序", "随机"],
+                                         width=10)
         self.order_option.pack(side=tk.LEFT)
 
         self.result_num_label = tk.Label(self.inner_option_frame, text="结果数量")
         self.result_num_label.pack(side=tk.LEFT)
 
-        self.result_num_entry = tk.Entry(self.inner_option_frame,width=15)
+        self.result_num_entry = tk.Entry(self.inner_option_frame, width=15)
         self.result_num_entry.pack(side=tk.LEFT)
 
         # 生成节点按钮
@@ -73,9 +75,25 @@ class App:
     def generate_nodes(self):
         # 获取原始节点和IP列表，处理字符串
         raw_node = self.raw_node_text.get("1.0", tk.END).strip()
-        raw_node = raw_node.replace("vmess://", "").strip()  # 移除 "vmess://" 前缀
-        raw_node = raw_node + '=' * ((4 - len(raw_node) % 4) % 4)  # 确保字符串长度是4的倍数
         ip_list = self.ip_list_text.get("1.0", tk.END).strip().split('\n')
+
+        if not raw_node:
+            messagebox.showerror("错误", "请输入节点")
+            return
+        if not ip_list[0]:
+            messagebox.showerror("错误", "请输入IP")
+            return
+
+        if raw_node.startswith("vmess://"):
+            raw_node = raw_node.replace("vmess://", "").strip()  # 移除 "vmess://" 前缀
+            raw_node = raw_node + '=' * ((4 - len(raw_node) % 4) % 4)  # 确保字符串长度是4的倍数
+            protocol = "vmess"
+        elif raw_node.startswith("vless://"):
+            protocol = "vless"
+        else:
+            messagebox.showerror("错误", "只支持vmess和vless节点")
+            return
+
         order = self.order_var.get()
         try:
             result_num = int(self.result_num_entry.get())
@@ -98,25 +116,43 @@ class App:
                 expanded_ip_list.append(ip)
 
         try:
-            # 解析原始节点
-            raw_node = base64.b64decode(raw_node).decode('utf-8')
-            node = json.loads(raw_node)
-            host = node['add']
+            if protocol == "vmess":
+                # 解析原始节点
+                raw_node = base64.b64decode(raw_node).decode('utf-8')
+                node = json.loads(raw_node)
+                host = node['add']
 
-            # 生成新节点
-            generated_nodes = set()  # 使用集合自动移除重复项
-            for i in range(result_num):
-                if order == '顺序':
-                    ip = expanded_ip_list[i % len(expanded_ip_list)]
-                else:  # 随机
-                    ip = random.choice(expanded_ip_list)
+                # 生成新节点
+                generated_nodes = set()  # 使用集合自动移除重复项
+                for i in range(result_num):
+                    if order == '顺序':
+                        ip = expanded_ip_list[i % len(expanded_ip_list)]
+                    else:  # 随机
+                        ip = random.choice(expanded_ip_list)
 
-                # 处理 IP 地址
-                if ':' in ip:  # IPv6
-                    ip = '[' + ip + ']'
-                node['add'] = ip
-                node['host'] = host
-                generated_nodes.add("vmess://" + base64.b64encode(json.dumps(node).encode('utf-8')).decode('utf-8'))
+                    # 处理 IP 地址
+                    if ':' in ip:  # IPv6
+                        ip = '[' + ip + ']'
+                    node['add'] = ip
+                    node['host'] = host
+                    generated_nodes.add("vmess://" + base64.b64encode(json.dumps(node).encode('utf-8')).decode('utf-8'))
+            elif protocol == "vless":
+                # 解析原始节点
+                node = raw_node
+                host = re.search(r'@(.+?):', node).group(1)
+
+                # 生成新节点
+                generated_nodes = set()  # 使用集合自动移除重复项
+                for i in range(result_num):
+                    if order == '顺序':
+                        ip = expanded_ip_list[i % len(expanded_ip_list)]
+                    else:  # 随机
+                        ip = random.choice(expanded_ip_list)
+
+                    # 处理 IP 地址
+                    if ':' in ip:  # IPv6
+                        ip = '[' + ip + ']'
+                    generated_nodes.add(node.replace(host, ip))
 
             # 更新生成节点输出框
             self.generated_node_text.config(state='normal')
@@ -130,8 +166,11 @@ class App:
         # 复制生成的节点到剪贴板
         generated_nodes = self.generated_node_text.get("1.0", tk.END).strip().split('\n')
         self.window.clipboard_clear()
-        self.window.clipboard_append('\n'.join(generated_nodes))
-        messagebox.showinfo("信息", f"已复制{len(generated_nodes)}条")
+        if generated_nodes == ['']:
+            messagebox.showinfo("提示", "已复制0条")
+        else:
+            self.window.clipboard_append('\n'.join(generated_nodes))
+            messagebox.showinfo("提示", f"已复制{len(generated_nodes)}条")
 
 
 window = tk.Tk()
