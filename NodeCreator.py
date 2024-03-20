@@ -7,6 +7,8 @@ import ipaddress
 import sys
 import os
 import re
+import requests
+
 
 class App:
     def __init__(self, window):
@@ -34,24 +36,49 @@ class App:
         self.ip_list_text = tk.Text(window, height=10)
         self.ip_list_text.grid(row=3, column=0, sticky='nsew')
 
+        # IP类型下拉框
+        self.ip_type_frame = tk.Frame(window)
+        self.ip_type_frame.grid(row=4, column=0, sticky='nsew')
+        self.ip_type_frame.columnconfigure(0, weight=1)  # 设置权重
+
+        self.inner_ip_type_frame = tk.Frame(self.ip_type_frame)
+        self.inner_ip_type_frame.pack(anchor='center')  # 居中
+
+        self.ip_type_label = tk.Label(self.inner_ip_type_frame, text="IP类型：")
+        self.ip_type_label.pack(side=tk.LEFT)
+
+        self.ip_type_var = tk.StringVar(window)
+        self.ip_type_var.set("自定义")  # 默认值
+        self.ip_type_option = ttk.Combobox(self.inner_ip_type_frame, textvariable=self.ip_type_var,
+                                           values=["自定义", "Cloudflare官方", "Cloudflare反代", "Cloudflare官方优选", "Cloudflare反代优选"], width=17)
+        self.ip_type_option.pack(side=tk.LEFT)
+        self.ip_type_option.bind("<<ComboboxSelected>>", self.update_ip_list)
+
         # 下拉框和结果数量输入框
         self.option_frame = tk.Frame(window)
-        self.option_frame.grid(row=4, column=0, sticky='nsew')
+        self.option_frame.grid(row=5, column=0, sticky='nsew')
 
         self.inner_option_frame = tk.Frame(self.option_frame)
         self.inner_option_frame.pack(anchor='center')
 
+        self.result_num_label = tk.Label(self.inner_option_frame, text="生成方式：")
+        self.result_num_label.pack(side=tk.LEFT)
+
         self.order_var = tk.StringVar(window)
         self.order_var.set("顺序")  # 默认值
         self.order_option = ttk.Combobox(self.inner_option_frame, textvariable=self.order_var, values=["顺序", "随机"],
-                                         width=10)
+                                         width=7)
         self.order_option.pack(side=tk.LEFT)
 
-        self.result_num_label = tk.Label(self.inner_option_frame, text="结果数量")
+        self.result_num_label = tk.Label(self.inner_option_frame, text="   结果数量：")
         self.result_num_label.pack(side=tk.LEFT)
 
-        self.result_num_entry = tk.Entry(self.inner_option_frame, width=15)
+        self.result_num_entry = tk.Entry(self.inner_option_frame, width=10)
         self.result_num_entry.pack(side=tk.LEFT)
+
+        # 添加一个包含三个空格的标签
+        self.space_label = tk.Label(self.inner_option_frame, text="   ")
+        self.space_label.pack(side=tk.LEFT)
 
         # 生成节点按钮
         self.generate_button = tk.Button(self.inner_option_frame, text="点击生成节点", command=self.generate_nodes)
@@ -59,18 +86,56 @@ class App:
 
         # 生成节点输出框
         self.generated_node_label = tk.Label(window, text="生成节点")
-        self.generated_node_label.grid(row=5, column=0, sticky='nsew')
+        self.generated_node_label.grid(row=6, column=0, sticky='nsew')
         self.generated_node_text = tk.Text(window, height=20, state='disabled')
-        self.generated_node_text.grid(row=6, column=0, sticky='nsew')
+        self.generated_node_text.grid(row=7, column=0, sticky='nsew')
 
         # 复制按钮
         self.copy_button = tk.Button(window, text="复制", command=self.copy_to_clipboard)
-        self.copy_button.grid(row=7, column=0, sticky='nsew')
+        self.copy_button.grid(row=8, column=0, sticky='nsew')
 
         # 设置网格权重
-        for i in range(8):
-            window.grid_rowconfigure(i, weight=1)
+        window.grid_rowconfigure(0, weight=1)  # 原始节点标签
+        window.grid_rowconfigure(1, weight=10)  # 原始节点输入框
+        window.grid_rowconfigure(2, weight=1)  # IP列表标签
+        window.grid_rowconfigure(3, weight=10)  # IP列表输入框
+        window.grid_rowconfigure(4, weight=1)  # IP类型下拉框
+        window.grid_rowconfigure(5, weight=1)  # 下拉框和结果数量输入框
+        window.grid_rowconfigure(6, weight=1)  # 生成节点标签
+        window.grid_rowconfigure(7, weight=10)  # 生成节点输出框
+        window.grid_rowconfigure(8, weight=1)  # 复制按钮
         window.grid_columnconfigure(0, weight=1)
+
+    # 感谢https://github.com/ymyuuu/IPDB 这一项目提供的IP
+    def update_ip_list(self, event):
+        ip_type = self.ip_type_var.get()
+        if ip_type == "Cloudflare官方":
+            ip_list = "173.245.48.0/20\n103.21.244.0/22\n103.22.200.0/22\n103.31.4.0/22\n141.101.64.0/18\n108.162.192.0/18\n190.93.240.0/20\n188.114.96.0/20\n197.234.240.0/22\n198.41.128.0/17\n162.158.0.0/15\n104.16.0.0/13\n104.24.0.0/14\n172.64.0.0/13\n131.0.72.0/22"
+        elif ip_type == "Cloudflare反代":
+            try:
+                response = requests.get("https://ipdb.api.030101.xyz/?type=proxy")
+                ip_list = response.text
+            except:
+                messagebox.showerror("错误", "无法获取IP列表，请手动输入")
+                return
+        elif ip_type == "Cloudflare官方优选":
+            try:
+                response = requests.get("https://ipdb.api.030101.xyz/?type=bestcf")
+                ip_list = response.text
+            except:
+                messagebox.showerror("错误", "无法获取IP列表，请手动输入")
+                return
+        elif ip_type == "Cloudflare反代优选":
+            try:
+                response = requests.get("https://ipdb.api.030101.xyz/?type=bestproxy")
+                ip_list = response.text
+            except:
+                messagebox.showerror("错误", "无法获取IP列表，请手动输入")
+                return
+        else:
+            ip_list = ""
+        self.ip_list_text.delete('1.0', tk.END)
+        self.ip_list_text.insert(tk.END, ip_list)
 
     def generate_nodes(self):
         # 获取原始节点和IP列表，处理字符串
