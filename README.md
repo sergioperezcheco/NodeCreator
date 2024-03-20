@@ -1,5 +1,8 @@
 # NodeCreator
 支持通过优选IP批量创建节点的本地工具
+## 更新说明
+0.3.0版本内置CF官方、CF反代、CF官方优选以及CF反代优选IP
+感谢https://github.com/ymyuuu/IPDB 这一项目提供的IP数据
 ## 使用方法
 
 1. 点击右侧Releases，下载NodeCreator.exe
@@ -19,7 +22,7 @@
 
 ## 更新计划
 
-- [ ] 增加预置优选IP
+- [x] 增加预置优选IP
 - [x] 增加vless节点
 - [ ] 增加web版
 - [x] 解决复制1条的问题
