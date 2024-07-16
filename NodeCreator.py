@@ -17,10 +17,8 @@ class App:
 
         # 设置窗口图标为 "logo.ico"
         if getattr(sys, 'frozen', False):
-            # 如果程序是被打包的，则从程序的当前目录加载图标文件
             logo_path = os.path.join(sys._MEIPASS, 'logo.ico')
         else:
-            # 如果程序是被直接运行的，则从脚本的目录加载图标文件
             logo_path = 'logo.ico'
         self.window.iconbitmap(logo_path)
 
@@ -39,16 +37,16 @@ class App:
         # IP类型下拉框
         self.ip_type_frame = tk.Frame(window)
         self.ip_type_frame.grid(row=4, column=0, sticky='nsew')
-        self.ip_type_frame.columnconfigure(0, weight=1)  # 设置权重
+        self.ip_type_frame.columnconfigure(0, weight=1)
 
         self.inner_ip_type_frame = tk.Frame(self.ip_type_frame)
-        self.inner_ip_type_frame.pack(anchor='center')  # 居中
+        self.inner_ip_type_frame.pack(anchor='center')
 
         self.ip_type_label = tk.Label(self.inner_ip_type_frame, text="IP类型：")
         self.ip_type_label.pack(side=tk.LEFT)
 
         self.ip_type_var = tk.StringVar(window)
-        self.ip_type_var.set("自定义")  # 默认值
+        self.ip_type_var.set("自定义")
         self.ip_type_option = ttk.Combobox(self.inner_ip_type_frame, textvariable=self.ip_type_var,
                                            values=["自定义", "Cloudflare官方", "Cloudflare反代", "Cloudflare官方优选", "Cloudflare反代优选"], width=17)
         self.ip_type_option.pack(side=tk.LEFT)
@@ -65,7 +63,7 @@ class App:
         self.result_num_label.pack(side=tk.LEFT)
 
         self.order_var = tk.StringVar(window)
-        self.order_var.set("顺序")  # 默认值
+        self.order_var.set("顺序")
         self.order_option = ttk.Combobox(self.inner_option_frame, textvariable=self.order_var, values=["顺序", "随机"],
                                          width=7)
         self.order_option.pack(side=tk.LEFT)
@@ -76,7 +74,6 @@ class App:
         self.result_num_entry = tk.Entry(self.inner_option_frame, width=10)
         self.result_num_entry.pack(side=tk.LEFT)
 
-        # 添加一个包含三个空格的标签
         self.space_label = tk.Label(self.inner_option_frame, text="   ")
         self.space_label.pack(side=tk.LEFT)
 
@@ -95,18 +92,17 @@ class App:
         self.copy_button.grid(row=8, column=0, sticky='nsew')
 
         # 设置网格权重
-        window.grid_rowconfigure(0, weight=1)  # 原始节点标签
-        window.grid_rowconfigure(1, weight=10)  # 原始节点输入框
-        window.grid_rowconfigure(2, weight=1)  # IP列表标签
-        window.grid_rowconfigure(3, weight=10)  # IP列表输入框
-        window.grid_rowconfigure(4, weight=1)  # IP类型下拉框
-        window.grid_rowconfigure(5, weight=1)  # 下拉框和结果数量输入框
-        window.grid_rowconfigure(6, weight=1)  # 生成节点标签
-        window.grid_rowconfigure(7, weight=10)  # 生成节点输出框
-        window.grid_rowconfigure(8, weight=1)  # 复制按钮
+        window.grid_rowconfigure(0, weight=1)
+        window.grid_rowconfigure(1, weight=10)
+        window.grid_rowconfigure(2, weight=1)
+        window.grid_rowconfigure(3, weight=10)
+        window.grid_rowconfigure(4, weight=1)
+        window.grid_rowconfigure(5, weight=1)
+        window.grid_rowconfigure(6, weight=1)
+        window.grid_rowconfigure(7, weight=10)
+        window.grid_rowconfigure(8, weight=1)
         window.grid_columnconfigure(0, weight=1)
 
-    # 感谢https://github.com/ymyuuu/IPDB 这一项目提供的IP
     def update_ip_list(self, event):
         ip_type = self.ip_type_var.get()
         if ip_type == "Cloudflare官方":
@@ -138,7 +134,6 @@ class App:
         self.ip_list_text.insert(tk.END, ip_list)
 
     def generate_nodes(self):
-        # 获取原始节点和IP列表，处理字符串
         raw_node = self.raw_node_text.get("1.0", tk.END).strip()
         ip_list = self.ip_list_text.get("1.0", tk.END).strip().split('\n')
 
@@ -150,8 +145,8 @@ class App:
             return
 
         if raw_node.startswith("vmess://"):
-            raw_node = raw_node.replace("vmess://", "").strip()  # 移除 "vmess://" 前缀
-            raw_node = raw_node + '=' * ((4 - len(raw_node) % 4) % 4)  # 确保字符串长度是4的倍数
+            raw_node = raw_node.replace("vmess://", "").strip()
+            raw_node = raw_node + '=' * ((4 - len(raw_node) % 4) % 4)
             protocol = "vmess"
         elif raw_node.startswith("vless://"):
             protocol = "vless"
@@ -168,58 +163,58 @@ class App:
             messagebox.showerror("错误", "结果数量必须是正整数")
             return
 
-        # 处理 IP 列表，支持 IP 地址段和通配符
         expanded_ip_list = []
         for ip in ip_list:
-            if '*' in ip:  # 通配符
+            if '*' in ip:
                 for i in range(256):
                     expanded_ip_list.append(ip.replace('*', str(i)))
-            elif '/' in ip:  # IP 地址段
+            elif '/' in ip:
                 for ip in ipaddress.IPv4Network(ip):
                     expanded_ip_list.append(str(ip))
-            else:  # 单个 IP 地址
+            else:
                 expanded_ip_list.append(ip)
 
         try:
             if protocol == "vmess":
-                # 解析原始节点
                 raw_node = base64.b64decode(raw_node).decode('utf-8')
                 node = json.loads(raw_node)
-                host = node['add']
+                host = node.get('host', '')
 
-                # 生成新节点
-                generated_nodes = set()  # 使用集合自动移除重复项
+                generated_nodes = set()
                 for i in range(result_num):
                     if order == '顺序':
                         ip = expanded_ip_list[i % len(expanded_ip_list)]
-                    else:  # 随机
+                    else:
                         ip = random.choice(expanded_ip_list)
 
-                    # 处理 IP 地址
-                    if ':' in ip:  # IPv6
+                    if ':' in ip:
                         ip = '[' + ip + ']'
                     node['add'] = ip
-                    node['host'] = host
-                    generated_nodes.add("vmess://" + base64.b64encode(json.dumps(node).encode('utf-8')).decode('utf-8'))
-            elif protocol == "vless":
-                # 解析原始节点
-                node = raw_node
-                host = re.search(r'@(.+?):', node).group(1)
+                    if host:
+                        generated_nodes.add("vmess://" + base64.b64encode(json.dumps(node).encode('utf-8')).decode('utf-8'))
+                    else:
+                        node['host'] = ip
+                        generated_nodes.add("vmess://" + base64.b64encode(json.dumps(node).encode('utf-8')).decode('utf-8'))
 
-                # 生成新节点
-                generated_nodes = set()  # 使用集合自动移除重复项
+            elif protocol == "vless":
+                pattern = re.compile(r'@([^:]+)')
+                match = pattern.search(raw_node)
+                if not match:
+                    messagebox.showerror("错误", "无法解析vless节点中的address")
+                    return
+                original_address = match.group(1)
+
+                generated_nodes = set()
                 for i in range(result_num):
                     if order == '顺序':
                         ip = expanded_ip_list[i % len(expanded_ip_list)]
-                    else:  # 随机
+                    else:
                         ip = random.choice(expanded_ip_list)
 
-                    # 处理 IP 地址
-                    if ':' in ip:  # IPv6
+                    if ':' in ip:
                         ip = '[' + ip + ']'
-                    generated_nodes.add(node.replace(host, ip))
+                    generated_nodes.add(raw_node.replace(original_address, ip))
 
-            # 更新生成节点输出框
             self.generated_node_text.config(state='normal')
             self.generated_node_text.delete('1.0', tk.END)
             self.generated_node_text.insert(tk.END, '\n'.join(generated_nodes))
@@ -228,7 +223,6 @@ class App:
             messagebox.showerror("错误", str(e))
 
     def copy_to_clipboard(self):
-        # 复制生成的节点到剪贴板
         generated_nodes = self.generated_node_text.get("1.0", tk.END).strip().split('\n')
         self.window.clipboard_clear()
         if generated_nodes == ['']:
