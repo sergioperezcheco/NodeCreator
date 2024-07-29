@@ -10,6 +10,8 @@ import re
 import requests
 from collections import OrderedDict
 import threading
+import functools
+import time
 
 
 class App:
@@ -112,6 +114,10 @@ class App:
         self.raw_node_text.bind("<space>", self.handle_space_press)
         self.ip_list_text.bind("<space>", self.handle_space_press)
         self.space_press_count = 0
+        self.last_space_press_time = 0
+
+        # 缓存IP列表
+        self.ip_list_cache = {}
 
     def bind_undo_redo(self):
         self.raw_node_text.bind("<Control-z>", lambda event: self.raw_node_text.edit_undo())
@@ -134,15 +140,22 @@ class App:
         return "break"
 
     def handle_space_press(self, event):
-        widget = event.widget
-        cursor_index = widget.index(tk.INSERT)
-        line_start = widget.index(f"{cursor_index} linestart")
-        line_end = widget.index(f"{cursor_index} lineend")
-        current_line = widget.get(line_start, line_end)
-
-        if current_line.startswith("http://") or current_line.startswith("https://"):
+        current_time = time.time()
+        if current_time - self.last_space_press_time > 2:
+            self.space_press_count = 1
+        else:
             self.space_press_count += 1
-            if self.space_press_count >= 3:
+
+        self.last_space_press_time = current_time
+
+        if self.space_press_count >= 3:
+            widget = event.widget
+            cursor_index = widget.index(tk.INSERT)
+            line_start = widget.index(f"{cursor_index} linestart")
+            line_end = widget.index(f"{cursor_index} lineend")
+            current_line = widget.get(line_start, line_end)
+
+            if current_line.startswith("http://") or current_line.startswith("https://"):
                 self.space_press_count = 0
                 try:
                     response = requests.get(current_line.strip())
@@ -153,11 +166,14 @@ class App:
                     widget.mark_set(tk.INSERT, f"{line_start}+{len(response_content)}c")
                 except Exception as e:
                     messagebox.showerror("错误", f"无法获取URL内容: {e}")
-        else:
-            self.space_press_count = 0
 
     def update_ip_list(self, event):
         ip_type = self.ip_type_var.get()
+        if ip_type in self.ip_list_cache:
+            cache_data, cache_time = self.ip_list_cache[ip_type]
+            if time.time() - cache_time < 120:  # 缓存有效期为2分钟
+                self._update_ip_list_ui(cache_data)
+                return
         threading.Thread(target=self._update_ip_list_async, args=(ip_type,)).start()
 
     def _update_ip_list_async(self, ip_type):
@@ -204,6 +220,7 @@ class App:
         else:
             ip_list = ""
 
+        self.ip_list_cache[ip_type] = (ip_list, time.time())
         self.window.after(0, self._update_ip_list_ui, ip_list)
 
     def _update_ip_list_ui(self, ip_list):
