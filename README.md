@@ -86,6 +86,7 @@ python -m PyInstaller --onefile --windowed --icon=C:\Users\Administrator\Desktop
 
 ## 致谢
 感谢https://github.com/ymyuuu/IPDB 这一项目提供的IP数据
+
 感谢[CF NO.1频道](https://t.me/cf_no1) 提供的优选反代IP
 
 
